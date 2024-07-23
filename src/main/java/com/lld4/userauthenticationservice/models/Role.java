@@ -1,4 +1,8 @@
 package com.lld4.userauthenticationservice.models;
 
-public enum Role {
+import jakarta.persistence.Entity;
+
+@Entity
+public class Role extends BaseModel{
+    private String value;
 }

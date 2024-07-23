@@ -4,10 +4,13 @@ import com.lld4.userauthenticationservice.models.Role;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
-public class UserDTO {
+public class UserDto {
     private String email;
-    private Role role;
+    private Set<Role> roles = new HashSet<>();
 
 }
