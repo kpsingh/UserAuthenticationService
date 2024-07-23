@@ -3,6 +3,8 @@ package com.lld4.userauthenticationservice.service;
 import com.lld4.userauthenticationservice.models.User;
 import com.lld4.userauthenticationservice.respository.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +37,12 @@ public class AuthService implements IAuthService {
 
     @Override
     public User login(String email, String password) {
-        return null;
+        Optional<User> userOptional = userRepo.findByEmail(email);
+
+        if (userOptional.isEmpty() || !bCryptPasswordEncoder.matches(password, userOptional.get().getPassword())) {
+            return null;
+        }
+
+        return userOptional.get();
     }
 }
