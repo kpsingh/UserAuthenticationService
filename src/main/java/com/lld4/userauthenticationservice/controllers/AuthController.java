@@ -6,9 +6,11 @@ import com.lld4.userauthenticationservice.dtos.UserDto;
 import com.lld4.userauthenticationservice.exceptions.UserAlreadyExistsException;
 import com.lld4.userauthenticationservice.models.User;
 import com.lld4.userauthenticationservice.service.IAuthService;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private IAuthService authService;
+
     public AuthController(IAuthService authService) {
         this.authService = authService;
     }
@@ -39,11 +42,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody LoginRequestDTO loginRequestDTO) {
-        User user = authService.login(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
-        if (user == null) {
+        Pair<User, MultiValueMap<String, String>> userWithHeaders = authService.login(loginRequestDTO.getEmail(), loginRequestDTO.getPassword());
+        if (userWithHeaders == null) {
             throw new UsernameNotFoundException("Invalid email or password");
         }
-        return new ResponseEntity<>(from(user), HttpStatus.ACCEPTED);
+        User user = userWithHeaders.a;
+        return new ResponseEntity<>(from(user), userWithHeaders.b, HttpStatus.OK);
     }
 
     private UserDto from(User user) {
