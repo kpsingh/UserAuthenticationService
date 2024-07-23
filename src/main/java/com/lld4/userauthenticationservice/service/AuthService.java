@@ -22,9 +22,9 @@ import java.util.Optional;
 @Service
 public class AuthService implements IAuthService {
 
-    private UserRepo userRepo;
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    private SessionRepo sessionRepo;
+    private final UserRepo userRepo;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final SessionRepo sessionRepo;
 
     public AuthService(UserRepo userRepo, BCryptPasswordEncoder bCryptPasswordEncoder, SessionRepo sessionRepo) {
         this.userRepo = userRepo;
