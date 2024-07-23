@@ -1,4 +1,4 @@
-package com.lld4.userauthenticationservice.security;
+package com.lld4.userauthenticationservice.config;
 
 
 import org.springframework.context.annotation.Bean;
@@ -9,7 +9,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-public class UserAuthenticationSpringSecurity {
+public class CustomConfiguration {
 
     @Bean
     BCryptPasswordEncoder bCryptPasswordEncoder() {
