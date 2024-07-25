@@ -26,5 +26,12 @@ public class ExceptionAdvice {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(value = InvalidTokenException.class)
+    public  ResponseEntity<CustomErrorResponse> invalidToken(InvalidTokenException ex){
+        CustomErrorResponse error = new CustomErrorResponse("INVALID_TOKEN", ex.getMessage());
+        error.setStatus(HttpStatus.UNAUTHORIZED.value());
+        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+    }
+
 
 }

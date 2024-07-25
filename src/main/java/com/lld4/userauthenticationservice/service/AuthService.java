@@ -5,6 +5,8 @@ import com.lld4.userauthenticationservice.models.SessionStatus;
 import com.lld4.userauthenticationservice.models.User;
 import com.lld4.userauthenticationservice.respository.SessionRepo;
 import com.lld4.userauthenticationservice.respository.UserRepo;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.antlr.v4.runtime.misc.Pair;
@@ -25,11 +27,13 @@ public class AuthService implements IAuthService {
     private final UserRepo userRepo;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SessionRepo sessionRepo;
+    private final SecretKey secretKey;
 
-    public AuthService(UserRepo userRepo, BCryptPasswordEncoder bCryptPasswordEncoder, SessionRepo sessionRepo) {
+    public AuthService(UserRepo userRepo, BCryptPasswordEncoder bCryptPasswordEncoder, SessionRepo sessionRepo, SecretKey secretKey) {
         this.userRepo = userRepo;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.sessionRepo = sessionRepo;
+        this.secretKey = secretKey;
     }
 
     @Override
@@ -65,8 +69,8 @@ public class AuthService implements IAuthService {
         payloads.put("exp",nowInMillis+1000000);
 
         //byte[] content = message.getBytes(StandardCharsets.UTF_8);
-        MacAlgorithm algorithm = Jwts.SIG.HS256;
-        SecretKey secretKey = algorithm.key().build();
+       // MacAlgorithm algorithm = Jwts.SIG.HS256;
+       // SecretKey secretKey = algorithm.key().build();
         //String token = Jwts.builder().content(content).signWith(secretKey).compact();
         String token = Jwts.builder().claims(payloads).signWith(secretKey).compact();
 
@@ -74,11 +78,42 @@ public class AuthService implements IAuthService {
         headers.add(HttpHeaders.SET_COOKIE,token);
 
         Session session = new Session();
-        session.setSessionStatus(SessionStatus.INACTIVE);
+        session.setSessionStatus(SessionStatus.ACTIVE);
         session.setUser(user);
         session.setToken(token);
         sessionRepo.save(session);
 
         return new Pair<User,MultiValueMap<String,String>>(user,headers);
+    }
+
+    @Override
+    public Boolean validateToken(Long userId, String token) {
+
+        Optional<Session> optionalSession = sessionRepo.findByToken(token);
+        if(optionalSession.isEmpty())
+            return false;
+
+        String storedToken = optionalSession.get().getToken();
+
+
+        JwtParser jwtParser = Jwts.parser().verifyWith(secretKey).build();
+        Claims claims = jwtParser.parseSignedClaims(token).getPayload();
+
+        Long tokenExpiry = (Long)claims.get("exp");
+
+        Long currentTime = System.currentTimeMillis();
+
+        System.out.println(tokenExpiry);
+        System.out.println(currentTime);
+
+        if(currentTime > tokenExpiry) {
+            System.out.println(
+                    "Token is expired");
+            //set state to expired in my DB
+            return false;
+        }
+
+
+        return null;
     }
 }

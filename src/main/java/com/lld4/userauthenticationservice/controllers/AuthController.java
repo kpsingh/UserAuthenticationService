@@ -3,6 +3,8 @@ package com.lld4.userauthenticationservice.controllers;
 import com.lld4.userauthenticationservice.dtos.LoginRequestDTO;
 import com.lld4.userauthenticationservice.dtos.SignupRequestDTO;
 import com.lld4.userauthenticationservice.dtos.UserDto;
+import com.lld4.userauthenticationservice.dtos.ValidateTokenRequestDto;
+import com.lld4.userauthenticationservice.exceptions.InvalidTokenException;
 import com.lld4.userauthenticationservice.exceptions.UserAlreadyExistsException;
 import com.lld4.userauthenticationservice.models.User;
 import com.lld4.userauthenticationservice.service.IAuthService;
@@ -48,6 +50,17 @@ public class AuthController {
         }
         User user = userWithHeaders.a;
         return new ResponseEntity<>(from(user), userWithHeaders.b, HttpStatus.OK);
+    }
+
+
+    @PostMapping("/validate")
+    private ResponseEntity<Boolean> validateToken(@RequestBody ValidateTokenRequestDto validateTokenRequestDto){
+        Boolean isValidToken = authService.validateToken(validateTokenRequestDto.getUserId(), validateTokenRequestDto.getToken());
+        if(!isValidToken){
+            throw new InvalidTokenException("Token is either invalid");
+        }
+        return  new ResponseEntity<>(true, HttpStatus.OK);
+
     }
 
     private UserDto from(User user) {
